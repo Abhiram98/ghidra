@@ -153,11 +153,24 @@ public class DisconnectedSymbolTreeProvider extends SymbolTreeProvider {
 			.popupMenuPath("Enable Category")
 			.withContext(SymbolTreeActionContext.class)
 			.enabledWhen(c -> {				
-				SymbolTreeNode node = c.getSelectedNode();
-				return node instanceof SymbolCategoryNode;	
+				SymbolTreeNode node = null;
+		if (c.getSelectionPaths() != null && c.getSelectionPaths().length == 1) {
+			Object object = c.getSelectionPaths()[0].getLastPathComponent();
+			if (object instanceof SymbolTreeNode node1) {
+				node=node1;
+			}
+		}
+		return node instanceof SymbolCategoryNode;
 			})
 			.onAction(c -> {
-				SymbolCategoryNode node = (SymbolCategoryNode) c.getSelectedNode();
+				SymbolTreeNode result = null;
+		if (c.getSelectionPaths() != null && c.getSelectionPaths().length == 1) {
+			Object object = c.getSelectionPaths()[0].getLastPathComponent();
+			if (object instanceof SymbolTreeNode node1) {
+				result=node1;
+			}
+		}
+		SymbolCategoryNode node = (SymbolCategoryNode) result;
 				node.setEnabled(true);
 			})
 			.buildAndInstallLocal(this);
@@ -168,11 +181,24 @@ public class DisconnectedSymbolTreeProvider extends SymbolTreeProvider {
 			.popupMenuPath("Disable Category")
 			.withContext(SymbolTreeActionContext.class)
 			.enabledWhen(c -> {				
-				SymbolTreeNode node = c.getSelectedNode();
-				return node instanceof SymbolCategoryNode;	
+				SymbolTreeNode node = null;
+		if (c.getSelectionPaths() != null && c.getSelectionPaths().length == 1) {
+			Object object = c.getSelectionPaths()[0].getLastPathComponent();
+			if (object instanceof SymbolTreeNode node1) {
+				node=node1;
+			}
+		}
+		return node instanceof SymbolCategoryNode;
 			})
 			.onAction(c -> {
-				SymbolCategoryNode node = (SymbolCategoryNode) c.getSelectedNode();
+				SymbolTreeNode result = null;
+		if (c.getSelectionPaths() != null && c.getSelectionPaths().length == 1) {
+			Object object = c.getSelectionPaths()[0].getLastPathComponent();
+			if (object instanceof SymbolTreeNode node1) {
+				result=node1;
+			}
+		}
+		SymbolCategoryNode node = (SymbolCategoryNode) result;
 				node.setEnabled(false);
 			})
 			.buildAndInstallLocal(this);

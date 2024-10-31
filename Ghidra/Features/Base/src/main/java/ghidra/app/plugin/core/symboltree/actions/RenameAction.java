@@ -30,13 +30,23 @@ public class RenameAction extends SymbolTreeContextAction {
 
 	@Override
 	public boolean isEnabledForContext(SymbolTreeActionContext context) {
-		SymbolTreeNode node = context.getSelectedNode();
+		SymbolTreeNode node = getSelectedNode(context);
 		return node != null;
+	}
+
+	private SymbolTreeNode getSelectedNode(SymbolTreeActionContext context) {
+		if (context.getSelectionPaths() != null && context.getSelectionPaths().length == 1) {
+			Object object = context.getSelectionPaths()[0].getLastPathComponent();
+			if (object instanceof SymbolTreeNode node) {
+				return node;
+			}
+		}
+		return null;
 	}
 
 	@Override
 	public void actionPerformed(SymbolTreeActionContext context) {
-		context.getSymbolTree().startEditing(context.getSelectedNode());
+		context.getSymbolTree().startEditing(getSelectedNode(context));
 	}
 
 }

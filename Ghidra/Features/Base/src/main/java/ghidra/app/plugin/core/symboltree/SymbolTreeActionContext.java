@@ -22,7 +22,6 @@ import javax.swing.tree.TreePath;
 
 import ghidra.app.context.ProgramSymbolActionContext;
 import ghidra.app.plugin.core.symboltree.nodes.SymbolNode;
-import ghidra.app.plugin.core.symboltree.nodes.SymbolTreeNode;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Symbol;
 
@@ -54,20 +53,8 @@ public class SymbolTreeActionContext extends ProgramSymbolActionContext {
 		}
 		return null;
 	}
-
-	/**
-	 * Returns a symbol tree node if there is a single node selected and it is a symbol tree node.
-	 * Otherwise, null is returned.
-	 * @return the selected node or null
-	 */
-	public SymbolTreeNode getSelectedNode() {
-		if (selectionPaths != null && selectionPaths.length == 1) {
-			Object object = selectionPaths[0].getLastPathComponent();
-			if (object instanceof SymbolTreeNode node) {
-				return node;
-			}
-		}
-		return null;
+	public TreePath[] getSelectionPaths() {
+		return selectionPaths;
 	}
 
 	/**
