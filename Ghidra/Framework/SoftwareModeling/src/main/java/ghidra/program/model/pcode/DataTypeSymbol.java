@@ -21,12 +21,10 @@ import generic.hash.SimpleCRC32;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.data.*;
 import ghidra.program.model.listing.FunctionSignature;
-import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.*;
 import ghidra.util.InvalidNameException;
 import ghidra.util.exception.DuplicateNameException;
 import ghidra.util.exception.InvalidInputException;
-import ghidra.util.task.TaskMonitor;
 
 public class DataTypeSymbol {
 	private Symbol sym;			// Traditional symbol object
@@ -51,6 +49,10 @@ public class DataTypeSymbol {
 
 	public DataType getDataType() {
 		return datatype;
+	}
+
+	public String getNmroot() {
+		return nmroot;
 	}
 
 	private String buildHashedDataType(DataTypeManager dtmanage) {
@@ -121,34 +123,6 @@ public class DataTypeSymbol {
 		for (Symbol s : dellist) {
 			s.delete();
 		}
-	}
-
-	public void cleanupUnusedOverride() {
-		if (sym == null) {
-			throw new RuntimeException("not instantiated with readSymbol method");
-		}
-
-		// NOTE: Although the symbol may have just been deleted its name will still be 
-		// be accesible within its retained DB record.
-		String overrideName = sym.getName(); // override marker symbol
-
-		Program program = sym.getProgram();
-		SymbolTable symbolTable = program.getSymbolTable();
-		String prefix = nmroot + "_";
-		String hashSuffix = "_" + extractHash(overrideName);
-		for (Symbol s : symbolTable.scanSymbolsByName(prefix)) {
-			String n = s.getName();
-			if (!n.startsWith(prefix)) {
-				break; // stop scan
-			}
-			if (s.getSymbolType() == SymbolType.LABEL && n.endsWith(hashSuffix) &&
-				HighFunction.isOverrideNamespace(s.getParentNamespace())) {
-				return; // do nothing if any symbol found
-			}
-		}
-
-		// remove unused override signature
-		program.getDataTypeManager().remove(getDataType(), TaskMonitor.DUMMY);
 	}
 
 	public static DataTypeSymbol readSymbol(String cat, Symbol s) {

@@ -21,10 +21,14 @@ import ghidra.app.util.HelpTopics;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.pcode.DataTypeSymbol;
+import ghidra.program.model.pcode.HighFunction;
 import ghidra.program.model.pcode.HighFunctionDBUtil;
 import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.SymbolTable;
+import ghidra.program.model.symbol.SymbolType;
 import ghidra.util.HelpLocation;
 import ghidra.util.UndefinedFunction;
+import ghidra.util.task.TaskMonitor;
 
 public class DeletePrototypeOverrideAction extends AbstractDecompilerAction {
 
@@ -57,11 +61,39 @@ public class DeletePrototypeOverrideAction extends AbstractDecompilerAction {
 		try {
 			DataTypeSymbol dts = HighFunctionDBUtil.readOverride(sym);
 			sym.delete();
-			dts.cleanupUnusedOverride();
+			new DeletePrototypeOverrideAction().cleanupUnusedOverride(dts);
 		}
 		finally {
 			program.endTransaction(txId, true);
 		}
+	}
+
+	private void cleanupUnusedOverride(DataTypeSymbol dts) {
+		if (dts.getSymbol() == null) {
+			throw new RuntimeException("not instantiated with readSymbol method");
+		}
+
+		// NOTE: Although the symbol may have just been deleted its name will still be
+		// be accesible within its retained DB record.
+		String overrideName = dts.getSymbol().getName(); // override marker symbol
+
+		Program program = dts.getSymbol().getProgram();
+		SymbolTable symbolTable = program.getSymbolTable();
+		String prefix = dts.getNmroot() + "_";
+		String hashSuffix = "_" + DataTypeSymbol.extractHash(overrideName);
+		for (Symbol s : symbolTable.scanSymbolsByName(prefix)) {
+			String n = s.getName();
+			if (!n.startsWith(prefix)) {
+				break; // stop scan
+			}
+			if (s.getSymbolType() == SymbolType.LABEL && n.endsWith(hashSuffix) &&
+				HighFunction.isOverrideNamespace(s.getParentNamespace())) {
+				return; // do nothing if any symbol found
+			}
+		}
+
+		// remove unused override signature
+		program.getDataTypeManager().remove(dts.getDataType(), TaskMonitor.DUMMY);
 	}
 
 }

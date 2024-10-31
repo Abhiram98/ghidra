@@ -24,8 +24,11 @@ import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.pcode.*;
 import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.SymbolTable;
+import ghidra.program.model.symbol.SymbolType;
 import ghidra.util.*;
 import ghidra.util.exception.DuplicateNameException;
+import ghidra.util.task.TaskMonitor;
 
 public class EditPrototypeOverrideAction extends AbstractDecompilerAction {
 
@@ -94,7 +97,7 @@ public class EditPrototypeOverrideAction extends AbstractDecompilerAction {
 			Address addr = sym.getAddress();
 			sym.delete(); // delete old marker symbol
 			HighFunctionDBUtil.writeOverride(func, addr, updatedFuncDef);
-			dts.cleanupUnusedOverride();
+			cleanupUnusedOverride(dts);
 		}
 		catch (Exception e) {
 			Msg.showError(getClass(), context.getDecompilerPanel(), "Override Signature Failed",
@@ -103,6 +106,34 @@ public class EditPrototypeOverrideAction extends AbstractDecompilerAction {
 		finally {
 			program.endTransaction(transaction, true);
 		}
+	}
+
+	private void cleanupUnusedOverride(DataTypeSymbol dts) {
+		if (dts.getSymbol() == null) {
+			throw new RuntimeException("not instantiated with readSymbol method");
+		}
+
+		// NOTE: Although the symbol may have just been deleted its name will still be
+		// be accesible within its retained DB record.
+		String overrideName = dts.getSymbol().getName(); // override marker symbol
+
+		Program program = dts.getSymbol().getProgram();
+		SymbolTable symbolTable = program.getSymbolTable();
+		String prefix = dts.getNmroot() + "_";
+		String hashSuffix = "_" + DataTypeSymbol.extractHash(overrideName);
+		for (Symbol s : symbolTable.scanSymbolsByName(prefix)) {
+			String n = s.getName();
+			if (!n.startsWith(prefix)) {
+				break; // stop scan
+			}
+			if (s.getSymbolType() == SymbolType.LABEL && n.endsWith(hashSuffix) &&
+				HighFunction.isOverrideNamespace(s.getParentNamespace())) {
+				return; // do nothing if any symbol found
+			}
+		}
+
+		// remove unused override signature
+		program.getDataTypeManager().remove(dts.getDataType(), TaskMonitor.DUMMY);
 	}
 
 }
