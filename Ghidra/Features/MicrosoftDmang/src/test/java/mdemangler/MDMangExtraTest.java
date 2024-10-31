@@ -46,41 +46,31 @@ public class MDMangExtraTest extends AbstractGenericTest {
 		String functionNamespaceTruth = "public: static int __cdecl Foo2b::Bar3(void)";
 
 		MDMangGhidra demangler = new MDMangGhidra();
-        MDParsableItem item = null;
-        boolean finished1 = false;
-        // TODO: Could possibly just ignore "demangleOnlyKnownpatterns"
-        if (!(mangled.startsWith("?") || mangled.startsWith(".") ||
-                mangled.startsWith("__") || (mangled.charAt(0) < 'a') ||
-                (mangled.charAt(0) > 'z') || (mangled.charAt(0) < 'A') ||
-                (mangled.charAt(0) > 'Z'))) {
-            finished1 = true;
-        }
-        if (!finished1) {
-            item = demangler.demangle(mangled, true);
-        }
+		MDParsableItem item = demangle(demangler, mangled, true, true);
 
-        String demangled = item.toString();
+		String demangled = item.toString();
 		assertEquals(wholeTruth, demangled);
 		DemangledObject obj = demangler.getObject();
 		String mangledFunctionNamespace = obj.getNamespace().getNamespace().getMangledString();
 		assertEquals(functionNamespaceMangledTruth, mangledFunctionNamespace);
 
-        MDParsableItem result = null;
-        boolean finished = false;
-        // TODO: Could possibly just ignore "demangleOnlyKnownpatterns"
-        if (!(mangledFunctionNamespace.startsWith("?") || mangledFunctionNamespace.startsWith(".") ||
-                mangledFunctionNamespace.startsWith("__") || (mangledFunctionNamespace.charAt(0) < 'a') ||
-                (mangledFunctionNamespace.charAt(0) > 'z') || (mangledFunctionNamespace.charAt(0) < 'A') ||
-                (mangledFunctionNamespace.charAt(0) > 'Z'))) {
-            finished = true;
-        }
-        if (!finished) {
-            result = demangler.demangle(mangledFunctionNamespace, true);
-        }
-
-        item = result;
+		item = demangle(demangler, mangledFunctionNamespace, true, true);
 		demangled = item.toString();
 		assertEquals(functionNamespaceTruth, demangled);
+	}
+
+	private MDParsableItem demangle(MDMangGhidra demangler, String mangled, boolean errorOnRemainingChars, boolean demangleOnlyKnownPatterns) throws MDException {
+		// TODO: Could possibly just ignore "demangleOnlyKnownpatterns"
+		if (demangleOnlyKnownPatterns) {
+			if (!(mangled.startsWith("?") || mangled.startsWith(".") ||
+				mangled.startsWith("__") || (mangled.charAt(0) < 'a') ||
+				(mangled.charAt(0) > 'z') || (mangled.charAt(0) < 'A') ||
+				(mangled.charAt(0) > 'Z'))) {
+				return null;
+			}
+		}
+
+		return demangler.demangle(mangled, errorOnRemainingChars);
 	}
 
 	@Test
@@ -90,20 +80,9 @@ public class MDMangExtraTest extends AbstractGenericTest {
 		String truth = "const b::a::`vftable'{for `e::d::c's `h::g::f's `k::j::i'}";
 
 		MDMangGhidra demangler = new MDMangGhidra();
-        MDParsableItem item = null;
-        boolean finished = false;
-        // TODO: Could possibly just ignore "demangleOnlyKnownpatterns"
-        if (!(mangled.startsWith("?") || mangled.startsWith(".") ||
-                mangled.startsWith("__") || (mangled.charAt(0) < 'a') ||
-                (mangled.charAt(0) > 'z') || (mangled.charAt(0) < 'A') ||
-                (mangled.charAt(0) > 'Z'))) {
-            finished = true;
-        }
-        if (!finished) {
-            item = demangler.demangle(mangled, true);
-        }
+		MDParsableItem item = demangle(demangler, mangled, true, true);
 
-        String demangled = item.toString();
+		String demangled = item.toString();
 		assertEquals(truth, demangled);
 
 		MDObjectCPP cppItem = (MDObjectCPP) item;

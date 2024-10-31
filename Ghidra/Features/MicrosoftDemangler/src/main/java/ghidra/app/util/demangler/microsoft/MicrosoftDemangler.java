@@ -71,7 +71,7 @@ public class MicrosoftDemangler implements Demangler {
 
 		MDMangGhidra demangler = new MDMangGhidra();
 		try {
-			demangle(mangled, demangleOnlyKnownPatterns, demangler);
+			demangle(mangled, demangleOnlyKnownPatterns, demangler, true);
 			DemangledObject object = demangler.getObject();
 			return object;
 		}
@@ -82,7 +82,7 @@ public class MicrosoftDemangler implements Demangler {
 		}
 	}
 
-	private void demangle(String mangled, boolean demangleOnlyKnownPatterns, MDMangGhidra demangler) throws MDException {
+	private void demangle(String mangled, boolean demangleOnlyKnownPatterns, MDMangGhidra demangler, boolean errorOnRemainingChars) throws MDException {
 		// TODO: Could possibly just ignore "demangleOnlyKnownpatterns"
 		if (demangleOnlyKnownPatterns) {
 			if (!(mangled.startsWith("?") || mangled.startsWith(".") ||
@@ -92,6 +92,7 @@ public class MicrosoftDemangler implements Demangler {
 				return;
 			}
 		}
-		demangler.demangle(mangled, true);
+
+		demangler.demangle(mangled, errorOnRemainingChars);
 	}
 }
