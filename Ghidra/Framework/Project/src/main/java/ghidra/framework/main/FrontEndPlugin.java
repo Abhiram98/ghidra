@@ -51,7 +51,6 @@ import ghidra.framework.options.SaveState;
 import ghidra.framework.plugintool.*;
 import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.framework.preferences.Preferences;
-import ghidra.framework.protocol.ghidra.GhidraURL;
 import ghidra.framework.remote.User;
 import ghidra.util.*;
 import ghidra.util.filechooser.GhidraFileChooserModel;
@@ -1156,43 +1155,14 @@ public class FrontEndPlugin extends Plugin
 
 	}
 
-	void showInViewedProject(URL ghidraURL, boolean isFolder) {
-
-		ProjectDataTreePanel dtp = projectDataPanel.openView(GhidraURL.getProjectURL(ghidraURL));
-		if (dtp == null) {
-			return;
-		}
-
-		Swing.runLater(() -> {
-			// delayed to ensure tree is displayed
-
-			ProjectData viewedProjectData = dtp.getProjectData();
-
-			String path = GhidraURL.getProjectPathname(ghidraURL);
-
-			if (isFolder) {
-				DomainFolder viewedProjectFolder = getViewProjectFolder(viewedProjectData, path);
-				if (viewedProjectFolder != null) {
-					dtp.selectDomainFolder(viewedProjectFolder);
-				}
-			}
-			else {
-				DomainFile viewedProjectFile = getViewProjectFile(viewedProjectData, path);
-				if (viewedProjectFile != null) {
-					dtp.selectDomainFile(viewedProjectFile);
-				}
-			}
-		});
-	}
-
-	private DomainFile getViewProjectFile(ProjectData viewedProjectData, String path) {
+	DomainFile getViewProjectFile(ProjectData viewedProjectData, String path) {
 		if (path == null || path.endsWith(DomainFolder.SEPARATOR)) {
 			return null;
 		}
 		return viewedProjectData.getFile(path);
 	}
 
-	private DomainFolder getViewProjectFolder(ProjectData viewedProjectData, String path) {
+	DomainFolder getViewProjectFolder(ProjectData viewedProjectData, String path) {
 		if (path == null || path.equals(DomainFolder.SEPARATOR)) {
 			return viewedProjectData.getRootFolder();
 		}

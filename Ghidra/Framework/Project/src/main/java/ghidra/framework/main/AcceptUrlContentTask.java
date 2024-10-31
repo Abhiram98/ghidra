@@ -21,7 +21,9 @@ import java.net.URL;
 import java.util.Set;
 
 import ghidra.framework.data.FolderLinkContentHandler;
+import ghidra.framework.main.datatree.ProjectDataTreePanel;
 import ghidra.framework.model.*;
+import ghidra.framework.protocol.ghidra.GhidraURL;
 import ghidra.framework.protocol.ghidra.GhidraURLQueryTask;
 import ghidra.util.Msg;
 import ghidra.util.Swing;
@@ -80,11 +82,40 @@ public class AcceptUrlContentTask extends GhidraURLQueryTask {
 				}
 				else {
 					// Select file within read-only viewed project
-					plugin.showInViewedProject(url, false);
+					showInViewedProject(url, false);
 				}
 			}
 			else {
 				AppInfo.getFrontEndTool().getToolServices().launchDefaultToolWithURL(url);
+			}
+		});
+	}
+
+	private void showInViewedProject(URL url, boolean isFolder) {
+
+		ProjectDataTreePanel dtp = plugin.getProjectDataPanel().openView(GhidraURL.getProjectURL(url));
+		if (dtp == null) {
+			return;
+		}
+
+		Swing.runLater(() -> {
+			// delayed to ensure tree is displayed
+
+			ProjectData viewedProjectData = dtp.getProjectData();
+
+			String path = GhidraURL.getProjectPathname(url);
+
+			if (isFolder) {
+				DomainFolder viewedProjectFolder = plugin.getViewProjectFolder(viewedProjectData, path);
+				if (viewedProjectFolder != null) {
+					dtp.selectDomainFolder(viewedProjectFolder);
+				}
+			}
+			else {
+				DomainFile viewedProjectFile = plugin.getViewProjectFile(viewedProjectData, path);
+				if (viewedProjectFile != null) {
+					dtp.selectDomainFile(viewedProjectFile);
+				}
 			}
 		});
 	}
@@ -113,7 +144,7 @@ public class AcceptUrlContentTask extends GhidraURLQueryTask {
 			}
 			else {
 				// Select folder within read-only viewed project
-				plugin.showInViewedProject(url, true);
+				showInViewedProject(url, true);
 			}
 		});
 
