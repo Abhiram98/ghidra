@@ -50,7 +50,14 @@ public class MDGhidraTestConfiguration extends MDBaseTestConfiguration {
 		MDParsableItem returnItem;
 		try {
 			// For first boolean: set true in operational mode.
-			returnItem = ((MDMangGhidra) mdmIn).demangle(mangledIn, false, false);
+			MDParsableItem result = null;
+			boolean finished = false;
+			// TODO: Could possibly just ignore "demangleOnlyKnownpatterns"
+			if (!finished) {
+				result = ((MDMangGhidra) mdmIn).demangle(mangledIn, false);
+			}
+
+			returnItem = result;
 			demangledObject = ((MDMangGhidra) mdmIn).getObject();
 		}
 		catch (MDException e) {

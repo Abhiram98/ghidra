@@ -51,21 +51,6 @@ public class MDMangGhidra extends MDMang {
 		return dataTypeResult;
 	}
 
-	public MDParsableItem demangle(String mangledArg, boolean errorOnRemainingChars,
-			boolean demangleOnlyKnownPatterns) throws MDException {
-		// TODO: Could possibly just ignore "demangleOnlyKnownpatterns"
-		if (demangleOnlyKnownPatterns) {
-			if (!(mangledArg.startsWith("?") || mangledArg.startsWith(".") ||
-				mangledArg.startsWith("__") || (mangledArg.charAt(0) < 'a') ||
-				(mangledArg.charAt(0) > 'z') || (mangledArg.charAt(0) < 'A') ||
-				(mangledArg.charAt(0) > 'Z'))) {
-				return null;
-			}
-		}
-
-		return demangle(mangledArg, errorOnRemainingChars);
-	}
-
 	@Override
 	public MDParsableItem demangle(String mangledArg, boolean errorOnRemainingChars)
 			throws MDException {
